@@ -14,80 +14,106 @@ define((require, exports, module) => {
   const Constants = require('lib/constants');
   const Url = require('lib/url');
 
-  module.exports = {
-    /**
-     * Does the browser support WebChannels?
-     *
-     * @returns {Boolean}
-     * @private
-     */
-    _hasWebChannelSupport () {
-      const uap = this.getUserAgent();
-      const browserVersion = uap.browser.version;
+  module.exports = function (config = {}) {
+    return {
+      setInitialContext (context) {
+        let escapedSyncSuggestionUrl;
+        if (this.isSyncAuthSupported()) {
+          escapedSyncSuggestionUrl = this.getEscapedSyncUrl(config.pathname, config.entrypoint);
+        } else {
+          escapedSyncSuggestionUrl = encodeURI(Constants.SYNC_GET_STARTED_URL);
+        }
+        const escapedSyncSuggestionAttrs = `data-flow-event="${config.flowEvent}" href="${escapedSyncSuggestionUrl}"`;
 
-      // WebChannels were introduced in Fx Desktop 40 and Fennec 43.
-      return ((uap.isFirefoxDesktop() && browserVersion >= 40) ||
-              (uap.isFirefoxAndroid() && browserVersion >= 43));
-    },
+        context.set({
+          escapedSyncSuggestionAttrs,
+          showSyncSuggestion: this.isSyncSuggestionEnabled()
+        });
+      },
 
-    /**
-     * Check whether the current environment supports sign in for Sync.
-     *
-     * @returns {Boolean}
-     */
-    isSyncAuthSupported () {
-      return !! this._hasWebChannelSupport();
-    },
 
-    /**
-     * Return the context that can be used to sign up/in
-     * to Sync. Assumes the context is only used if the user
-     * can actually sign in to Sync.
-     *
-     * @returns {String}
-     */
-    _getSyncContext () {
-      const uap = this.getUserAgent();
-      if (uap.isFirefoxAndroid()) {
-        return Constants.FX_FENNEC_V1_CONTEXT;
-      } else if (uap.isFirefoxDesktop()) {
-        // desktop_v3 is safe for all desktop versions that can
-        // use WebChannels. The only difference between v2 and v3
-        // was the Sync Preferences button, which has since
-        // been disabled.
-        return Constants.FX_DESKTOP_V3_CONTEXT;
+      isSyncSuggestionEnabled () {
+        if (! this.relier.get('service')) {
+          this.logViewEvent('sync-suggest.visible');
+          return true;
+        }
+        return false;
+      },
+
+      /**
+       * Does the browser support WebChannels?
+       *
+       * @returns {Boolean}
+       * @private
+       */
+      _hasWebChannelSupport () {
+        const uap = this.getUserAgent();
+        const browserVersion = uap.browser.version;
+
+        // WebChannels were introduced in Fx Desktop 40 and Fennec 43.
+        return ((uap.isFirefoxDesktop() && browserVersion >= 40) ||
+                (uap.isFirefoxAndroid() && browserVersion >= 43));
+      },
+
+      /**
+       * Check whether the current environment supports sign in for Sync.
+       *
+       * @returns {Boolean}
+       */
+      isSyncAuthSupported () {
+        return !! this._hasWebChannelSupport();
+      },
+
+      /**
+       * Return the context that can be used to sign up/in
+       * to Sync. Assumes the context is only used if the user
+       * can actually sign in to Sync.
+       *
+       * @returns {String}
+       */
+      _getSyncContext () {
+        const uap = this.getUserAgent();
+        if (uap.isFirefoxAndroid()) {
+          return Constants.FX_FENNEC_V1_CONTEXT;
+        } else if (uap.isFirefoxDesktop()) {
+          // desktop_v3 is safe for all desktop versions that can
+          // use WebChannels. The only difference between v2 and v3
+          // was the Sync Preferences button, which has since
+          // been disabled.
+          return Constants.FX_DESKTOP_V3_CONTEXT;
+        }
+      },
+
+      /**
+       * Get an escaped Sync URL for `pathname`.
+       *
+       * @param {String} pathname target pathname
+       * @param {String} entrypoint entrypoint for metrics
+       * @param {Object} [extraQueryParams={}] Extra query parameters
+       * @returns {String}
+       */
+      getEscapedSyncUrl (pathname, entrypoint, extraQueryParams = {}) {
+        const origin = this.window.location.origin;
+        const relier = this.relier;
+
+        const params = _.extend({
+          context: this._getSyncContext(),
+          entrypoint: entrypoint,
+          service: Constants.SYNC_SERVICE,
+          /* eslint-disable camelcase */
+          utm_campaign: relier.get('utmCampaign'),
+          utm_content: relier.get('utmContent'),
+          utm_medium: relier.get('utmMedium'),
+          utm_source: relier.get('utmSource'),
+          utm_term: relier.get('utmTerm')
+          /* eslint-enable camelcase */
+        }, extraQueryParams);
+        // Url.objToSearchString escapes each of the
+        // query parameters.
+        const escapedSearchString = Url.objToSearchString(params);
+
+        return `${origin}/${pathname}${escapedSearchString}`;
       }
-    },
-
-    /**
-     * Get an escaped Sync URL for `pathname`.
-     *
-     * @param {String} pathname target pathname
-     * @param {String} entrypoint entrypoint for metrics
-     * @param {Object} [extraQueryParams={}] Extra query parameters
-     * @returns {String}
-     */
-    getEscapedSyncUrl (pathname, entrypoint, extraQueryParams = {}) {
-      const origin = this.window.location.origin;
-      const relier = this.relier;
-
-      const params = _.extend({
-        context: this._getSyncContext(),
-        entrypoint: entrypoint,
-        service: Constants.SYNC_SERVICE,
-        /* eslint-disable camelcase */
-        utm_campaign: relier.get('utmCampaign'),
-        utm_content: relier.get('utmContent'),
-        utm_medium: relier.get('utmMedium'),
-        utm_source: relier.get('utmSource'),
-        utm_term: relier.get('utmTerm')
-        /* eslint-enable camelcase */
-      }, extraQueryParams);
-      // Url.objToSearchString escapes each of the
-      // query parameters.
-      const escapedSearchString = Url.objToSearchString(params);
-
-      return `${origin}/${pathname}${escapedSearchString}`;
-    }
+    };
   };
 });

@@ -201,7 +201,11 @@ define(function (require, exports, module) {
       // easier where sometimes ?service=sync is forgotten. See #4948.
       service: SYNC_SERVICE
     }),
-    SyncAuthMixin,
+    SyncAuthMixin({
+      entrypoint: View.ENTRYPOINT,
+      flowEvent: 'link.signin',
+      pathname: 'signin'
+    }),
     UserAgentMixin
   );
 

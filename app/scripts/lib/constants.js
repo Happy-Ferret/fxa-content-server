@@ -48,6 +48,10 @@ define(function (require, exports, module) {
     SYNC_SERVICE: 'sync',
 
     SYNC11_MIGRATION: 'sync11',
+
+    SYNC_GET_STARTED_URL: 'https://mozilla.org/firefox/sync?utm_source=fx-website&utm_medium=fx-accounts&' +
+                          'utm_campaign=fx-signup&utm_content=fx-sync-get-started',
+
     AMO_MIGRATION: 'amo',
 
     VERIFICATION_POLL_IN_MS: 4000,

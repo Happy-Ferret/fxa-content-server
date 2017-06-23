@@ -23,6 +23,13 @@ define(function (require, exports, module) {
 
     initialize (options = {}) {
       this._formPrefill = options.formPrefill;
+      this._required = options.required;
+    },
+
+    setInitialContext (context) {
+      context.set({
+        required: this._required
+      });
     },
 
     events: {
