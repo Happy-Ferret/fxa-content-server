@@ -26,6 +26,7 @@ define([
   var testErrorTextInclude = FunctionalHelpers.testErrorTextInclude;
   var testElementExists = FunctionalHelpers.testElementExists;
   var testElementTextInclude = FunctionalHelpers.testElementTextInclude;
+  var cleanMemory = FunctionalHelpers.cleanMemory;
   var testElementValueEquals = FunctionalHelpers.testElementValueEquals;
   var type = FunctionalHelpers.type;
   var visibleByQSA = FunctionalHelpers.visibleByQSA;
@@ -45,6 +46,7 @@ define([
 
     'with an invalid email': function () {
       return this.remote
+        .then(cleanMemory())
         .then(openPage(PAGE_URL + '?email=invalid', '#fxa-400-header'))
         .then(testErrorTextInclude('invalid'))
         .then(testErrorTextInclude('email'));
@@ -52,6 +54,7 @@ define([
 
     'sign in unverified': function () {
       return this.remote
+        .then(cleanMemory())
         .then(createUser(email, PASSWORD, { preVerified: false }))
         .then(openPage(PAGE_URL, '#fxa-signin-header'))
         .then(fillOutSignIn(email, PASSWORD))

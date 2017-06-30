@@ -1773,6 +1773,19 @@ define([
   });
 
   /**
+   * Get some memory back
+   *
+   */
+  const cleanMemory = thenify(function (selector, attributeName) {
+    return this.parent
+      .get(require.toUrl('about:memory'))
+      // Click the Minimize Memory Usage button
+      .then(click('div.opsRow:nth-child(3) > button:nth-child(4)'))
+      .then(testElementExists('.section'))
+      .end();
+  });
+
+  /**
    * Denormalize the email stored in an account. Sets the email to be all uppercase.
    *
    * @param   {string} email - email address to denormalize
@@ -1859,6 +1872,7 @@ define([
   });
 
   return {
+    cleanMemory,
     clearBrowserNotifications: clearBrowserNotifications,
     clearBrowserState: clearBrowserState,
     clearSessionStorage: clearSessionStorage,
