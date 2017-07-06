@@ -8,7 +8,7 @@ define([
 ], function (intern, selectCircleTests) {
 
   intern.functionalSuites = selectCircleTests([
-    'tests/functional/settings_secondary_emails.js',
+    'tests/functional/fx_firstrun_v2_email_first',
     // flaky tests go above here.
     'tests/functional/avatar',
     'tests/functional/back_button_after_start',
@@ -41,6 +41,7 @@ define([
     'tests/functional/settings',
     'tests/functional/settings_clients',
     'tests/functional/settings_common',
+    'tests/functional/settings_secondary_emails.js',
     'tests/functional/sign_in',
     'tests/functional/sign_in_blocked',
     'tests/functional/sign_in_cached',

@@ -27,6 +27,7 @@ define([
   './functional/fx_firstrun_v1_sign_up',
   './functional/fx_firstrun_v1_sign_in',
   './functional/fx_firstrun_v1_settings',
+  './functional/fx_firstrun_v2_email_first',
   './functional/fx_firstrun_v2_sign_up',
   './functional/fx_firstrun_v2_settings',
   './functional/fx_ios_v1_sign_in',
