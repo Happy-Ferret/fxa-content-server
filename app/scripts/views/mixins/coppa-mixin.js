@@ -14,7 +14,7 @@ define(function (require, exports, module) {
     return {
       initialize (options = {}) {
         this._coppa = options.coppa;
-        this._formPrefill = options.formPrefill;
+        this._createView = options.createView;
       },
 
       beforeRender () {
@@ -25,6 +25,11 @@ define(function (require, exports, module) {
         }
       },
 
+      /**
+       * Create and render the COPPA view.
+       *
+       * @returns {Promise} resolves when complete
+       */
       createCoppaView () {
         if (this._coppa) {
           return p();
@@ -32,14 +37,11 @@ define(function (require, exports, module) {
 
         var coppaOptions = {
           el: this.$('#coppa'),
-          formPrefill: this._formPrefill,
-          metrics: this.metrics,
-          notifier: this.notifier,
           required: config.required,
           viewName: this.getViewName()
         };
 
-        var coppaView = new CoppaAgeInput(coppaOptions);
+        var coppaView = this._createView(CoppaAgeInput, coppaOptions);
 
         return coppaView.render()
           .then(() => {
@@ -53,14 +55,29 @@ define(function (require, exports, module) {
           });
       },
 
+      /**
+       * Is the user old enough to sign up?
+       *
+       * @returns {Boolean}
+       */
       isUserOldEnough () {
         return this._coppa.isUserOldEnough();
       },
 
+      /**
+       * Has the user filled out the COPPA input element?
+       *
+       * @returns {Boolean}
+       */
       coppaHasValue () {
         return this._coppa.hasValue();
       },
 
+      /**
+       * Mark the user as too young. Navigates to
+       * a page informing the user they are unable
+       * to sign up.
+       */
       tooYoung () {
         this.notifier.trigger('signup.tooyoung');
 
