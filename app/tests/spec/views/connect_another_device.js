@@ -50,6 +50,7 @@ define(function (require, exports, module) {
         user,
         window: windowMock
       });
+      sinon.stub(view, 'isSyncAuthSupported', () => false);
       sinon.spy(view, 'logFlowEvent');
     });
 
@@ -112,6 +113,8 @@ define(function (require, exports, module) {
       });
 
       describe('with a Fx desktop user that can sign in', () => {
+        const SYNC_URL = 'https://accounts.firefox.com/signin?context=fx_desktop_v3&service=sync&email=testuser@testuser.com';
+
         beforeEach(() => {
           sinon.stub(view, 'getUserAgent', () => {
             return {
@@ -127,6 +130,7 @@ define(function (require, exports, module) {
           account.set('email', 'testuser@testuser.com');
           sinon.stub(user, 'isSignedInAccount', () => false);
           sinon.stub(view, '_canSignIn', () => true);
+          sinon.stub(view, 'getEscapedSyncUrl', () => SYNC_URL);
 
           return view.render()
             .then(() => {
@@ -136,6 +140,7 @@ define(function (require, exports, module) {
 
         it('shows a sign in button with the appropriate link, logs appropriately', () => {
           assert.lengthOf(view.$('#signin'), 1);
+          assert.equal(view.$('#signin').prop('href'), SYNC_URL);
           testIsFlowEventLogged('signedin.false');
           testIsFlowEventLogged('signin.eligible');
           testIsFlowEventLogged('signin_from.fx_desktop');
@@ -302,6 +307,10 @@ define(function (require, exports, module) {
     });
 
     describe('_canSignIn', () => {
+      beforeEach(() => {
+        view.isSyncAuthSupported.restore();
+      });
+
       it('returns `false` if user is signed in', () => {
 
         sinon.stub(user, 'isSignedInAccount', () => true);
@@ -322,26 +331,6 @@ define(function (require, exports, module) {
         sinon.stub(view, 'isSyncAuthSupported', () => true);
 
         assert.isTrue(view._canSignIn());
-      });
-    });
-
-
-    describe('_getEscapedSignInUrl', () => {
-      const SYNC_URL = 'https://accounts.firefox.com/signin?context=fx_desktop_v3&service=sync&email=testuser@testuser.com';
-
-      beforeEach(() => {
-        sinon.stub(view, 'getEscapedSyncUrl', () => SYNC_URL);
-      });
-
-      it('returns the expected URL', () => {
-        assert.equal(
-          view._getEscapedSignInUrl('testuser@testuser.com'),
-          SYNC_URL
-        );
-
-        assert.isTrue(view.getEscapedSyncUrl.calledOnce);
-        assert.isTrue(view.getEscapedSyncUrl.calledWith(
-            'signin', View.ENTRYPOINT, { email: 'testuser@testuser.com' }));
       });
     });
 

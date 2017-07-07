@@ -57,6 +57,13 @@ define(function (require, exports, module) {
       var viewOpts = {
         broker: broker,
         coppa: coppa,
+        createView: function (Constructor, options) {
+          const viewOptions = Object.create(options);
+          viewOptions.formPrefill = formPrefill;
+          viewOptions.metrics = metrics;
+          viewOptions.notifier = notifier;
+          return new Constructor(viewOptions);
+        },
         experimentGroupingRules: options.experimentGroupingRules || experimentGroupingRules,
         formPrefill: formPrefill,
         fxaClient: fxaClient,
@@ -114,10 +121,7 @@ define(function (require, exports, module) {
       $('body').attr('data-flow-id', 'F1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF1031DF103');
       $('body').attr('data-flow-begin', '42');
 
-      return view.render()
-        .then(function () {
-          $('#container').html(view.el);
-        });
+      return view.render();
     });
 
     afterEach(function () {
@@ -1231,6 +1235,7 @@ define(function (require, exports, module) {
       });
 
       it('suggests emails via a tooltip', function () {
+        $('#container').html(view.el);
         view.$('.email').val('testuser@gnail.com');
         view.onEmailBlur();
         // wait for tooltip
@@ -1336,6 +1341,8 @@ define(function (require, exports, module) {
       });
 
       it('logs the submit event', () => {
+        $('#container').html(view.el);
+
         view.$('#submit-btn').click();
         assert.isFalse(TestHelpers.isEventLogged(metrics, 'flow.signup.submit'));
         view.enableForm();

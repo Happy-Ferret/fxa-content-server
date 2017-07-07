@@ -127,7 +127,7 @@ define(function (require, exports, module) {
       const isSignedIn = this._isSignedIn();
       const canSignIn = this._canSignIn();
       const email = this.getAccount().get('email');
-      const escapedSignInUrl = this._getEscapedSignInUrl(email);
+      const escapedSignInUrl = this.getEscapedSyncUrl({ email });
 
       const uap = this.getUserAgent();
       const isAndroid = uap.isAndroid();
@@ -172,18 +172,6 @@ define(function (require, exports, module) {
     _canSignIn () {
       // Only users that are not signed in can do so.
       return ! this._isSignedIn() && this.isSyncAuthSupported();
-    },
-
-    /**
-     * Get an escaped sign in URL.
-     *
-     * @param {String} email - users email address, used to
-     *  pre-fill the signin page.
-     * @returns {String}
-     * @private
-     */
-    _getEscapedSignInUrl (email) {
-      return this.getEscapedSyncUrl('signin', View.ENTRYPOINT, { email: email });
     }
   }, {
     ENTRYPOINT: 'fxa:connect_another_device'

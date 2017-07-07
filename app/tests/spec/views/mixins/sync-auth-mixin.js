@@ -16,11 +16,18 @@ define(function (require, exports, module) {
   const UserAgentMixin = require('lib/user-agent-mixin');
   const WindowMock = require('../../../mocks/window');
 
+  const ENTRYPOINT = 'fxa:signup';
+  const PATHNAME = 'signin';
+
   const SyncView = BaseView.extend({});
 
   Cocktail.mixin(
     SyncView,
-    SyncAuthMixin,
+    SyncAuthMixin({
+      entrypoint: ENTRYPOINT,
+      flowEvent: 'signin',
+      pathname: PATHNAME
+    }),
     UserAgentMixin
   );
 
@@ -65,9 +72,7 @@ define(function (require, exports, module) {
     describe('getEscapedSyncUrl', () => {
       const CONTEXT = 'fx_desktop_v3';
       const EMAIL = 'testuser@testuser.com';
-      const ENTRYPOINT = 'fxa:signup';
       const ORIGIN = 'https://accounts.firefox.com';
-      const PATHNAME = 'signin';
 
       beforeEach(() => {
         windowMock.location.origin = ORIGIN;
@@ -83,7 +88,7 @@ define(function (require, exports, module) {
       });
 
       it('returns the expected URL', () => {
-        const escapedSyncUrl = view.getEscapedSyncUrl(PATHNAME, ENTRYPOINT, {
+        const escapedSyncUrl = view.getEscapedSyncUrl({
           email: EMAIL
         });
 

@@ -14,7 +14,17 @@ define((require, exports, module) => {
   const Constants = require('lib/constants');
   const Url = require('lib/url');
 
+  function required (name, opts) {
+    if (! (name in opts)) {
+      throw new Error(`${name} is required`);
+    }
+  }
+
   module.exports = function (config = {}) {
+    required('entrypoint', config);
+    required('flowEvent', config);
+    required('pathname', config);
+
     return {
       setInitialContext (context) {
         let escapedSyncSuggestionUrl;
@@ -31,7 +41,11 @@ define((require, exports, module) => {
         });
       },
 
-
+      /**
+       * Is the Sync suggestion enabled for this integration?
+       *
+       * @returns {Boolean}
+       */
       isSyncSuggestionEnabled () {
         if (! this.relier.get('service')) {
           this.logViewEvent('sync-suggest.visible');
@@ -87,18 +101,16 @@ define((require, exports, module) => {
       /**
        * Get an escaped Sync URL for `pathname`.
        *
-       * @param {String} pathname target pathname
-       * @param {String} entrypoint entrypoint for metrics
        * @param {Object} [extraQueryParams={}] Extra query parameters
        * @returns {String}
        */
-      getEscapedSyncUrl (pathname, entrypoint, extraQueryParams = {}) {
+      getEscapedSyncUrl (extraQueryParams = {}) {
         const origin = this.window.location.origin;
         const relier = this.relier;
 
         const params = _.extend({
           context: this._getSyncContext(),
-          entrypoint: entrypoint,
+          entrypoint: config.entrypoint,
           service: Constants.SYNC_SERVICE,
           /* eslint-disable camelcase */
           utm_campaign: relier.get('utmCampaign'),
@@ -112,7 +124,7 @@ define((require, exports, module) => {
         // query parameters.
         const escapedSearchString = Url.objToSearchString(params);
 
-        return `${origin}/${pathname}${escapedSearchString}`;
+        return `${origin}/${config.pathname}${escapedSearchString}`;
       }
     };
   };
